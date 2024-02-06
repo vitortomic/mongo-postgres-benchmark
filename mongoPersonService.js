@@ -1,4 +1,5 @@
 const { Contact, Person } = require('./mongoSetup.js')
+const { performance } = require('perf_hooks');
 
 const createPerson = async (personDto) => {
     const newContact = new Contact({
@@ -16,22 +17,31 @@ const createPerson = async (personDto) => {
 }
 
 const createPersons = async (persons) => {
-    console.time('createPersons')
+    const startTime = performance.now();
     createdPersons = await Person.insertMany(persons)
+    const endTime = performance.now();
+    const executionTime = endTime - startTime;
     console.log(`Saved ${createdPersons.length} persons`)
     return {
         createdPersons,
-        executionTime: console.timeEnd('createPersons')
+        executionTime: executionTime
       };
 }
 
 const deleteAllPersons = async () => {
+    const startTime = performance.now();
     result = await Person.deleteMany({})
+    const endTime = performance.now();
+    const executionTime = endTime - startTime;
     console.log(`Deleted ${result.deletedCount} Persons`)
-    return result.deletedCount
+    return {
+        "deletedCount" : result.deletedCount,
+        executionTime: executionTime
+      };
 }
 
 const calculateCollectiveAge = async () => {
+    const startTime = performance.now();
     try {
       const result = await Person.aggregate([
         {
@@ -47,13 +57,18 @@ const calculateCollectiveAge = async () => {
           }
         }
       ]);
-  
+      
       const collectiveAgeInMilliseconds = result[0]?.collectiveAge || 0;
       const collectiveAgeInSeconds = collectiveAgeInMilliseconds / 1000;
       const collectiveAgeInYears = collectiveAgeInSeconds / (365.25 * 24 * 60 * 60);
-  
+      const endTime = performance.now();
+      const executionTime = endTime - startTime;
+   
       console.log('Collective age of all persons:', collectiveAgeInYears.toFixed(2), 'years');
-      return collectiveAgeInYears;
+      return {
+        collectiveAgeInYears,
+        executionTime: executionTime
+      };
     } catch (err) {
       console.error(err);
       throw err;

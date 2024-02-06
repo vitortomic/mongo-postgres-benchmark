@@ -8,7 +8,7 @@ const app = express()
 const PORT = process.env.PORT || 3000
 const chance = new Chance()
 
-const numberOfRecords = 1000000
+const numberOfRecords = 100000
 
 const persons = Array.from({ length: numberOfRecords }, () => ({
   address: chance.address(),
@@ -18,9 +18,6 @@ const persons = Array.from({ length: numberOfRecords }, () => ({
   birthDate: chance.birthday()
 }));
 
-const createdPersonsMongo = createPersons(persons)
-console.log(`Create persons execution time ${createdPersonsMongo.executionTime}ms`)
-
 app.use(express.json())
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`)
@@ -28,11 +25,10 @@ app.listen(PORT, () => {
 
 app.delete('/persons', async (req, res) => {
   try {
-    console.time('deletePersons')
     deletedCount = await deleteAllPersons();
     res.json({
-      "deletedCount": deletedCount,
-      executionTime: console.timeEnd('deletePersons')
+      "deletedCount": deletedCount.deletedCount,
+      executionTime: deletedCount.executionTime
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -41,84 +37,31 @@ app.delete('/persons', async (req, res) => {
 
 app.get('/persons/getCollectiveAge', async (req, res) => {
   try {
-    console.time('getCollectiveAge')
     collectiveAge = await calculateCollectiveAge()
     res.json({
       "collectiveAge": collectiveAge,
-      executionTime: console.timeEnd('getCollectiveAge')
+      executionTime: collectiveAge.executionTime
     })
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-
-
-
-
-/*
-// PostgreSQL setup
-const pgPool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'benchmark_postgresql',
-  password: 'admin',
-  port: 5433
-});
-const knex = Knex({
-  client: 'pg',
-  connection: {
-    user: 'postgres',
-    host: 'localhost',
-    database: 'benchmark_postgresql',
-    password: 'admin',
-    port: 5433
-  }
-});
-*/
-
-/*
-// Routes for MongoDB
-app.post('/mongodb/hotels', async (req, res) => {
+app.get('/benchmark', async (req, res) => {
   try {
-    const { name, location, rooms } = req.body;
-    const hotel = new MongodbHotel({ name, location, rooms });
-    await hotel.save();
-    res.json(hotel);
+    createdPersonsMongo = await createPersons(persons)
+    console.log(`Create persons execution time ${createdPersonsMongo.executionTime}ms`)
+    collectiveAge = await calculateCollectiveAge()
+    deleteResponse = await deleteAllPersons()
+    response = {
+      numberOfRecords,
+      'createPersonsExecutionTime': createdPersonsMongo.executionTime,
+      'getCollectiveAgeExecutionTime': collectiveAge.executionTime,
+      'deleteAllExecutionTime': deleteResponse.executionTime
+    }
+    res.json(response)
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
-
-app.get('/mongodb/hotels', async (req, res) => {
-  try {
-    const hotels = await MongodbHotel.find();
-    res.json(hotels);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-*/
-/*
-// Routes for PostgreSQL
-app.post('/postgresql/hotels', async (req, res) => {
-  try {
-    const { name, location, rooms } = req.body;
-    const hotel = await knex('hotels').insert({ name, location, rooms }).returning('*');
-    res.json(hotel[0]);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.get('/postgresql/hotels', async (req, res) => {
-  try {
-    const hotels = await knex('hotels').select('*');
-    res.json(hotels);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});*/
-
-
 
