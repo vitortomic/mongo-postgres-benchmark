@@ -15,6 +15,16 @@ const createPerson = async (personDto) => {
     console.log('Person saved:', savedPerson)
 }
 
+const createPersons = async (persons) => {
+    console.time('createPersons')
+    createdPersons = await Person.insertMany(persons)
+    console.log(`Saved ${createdPersons.length} persons`)
+    return {
+        createdPersons,
+        executionTime: console.timeEnd('createPersons')
+      };
+}
+
 const deleteAllPersons = async () => {
     result = await Person.deleteMany({})
     console.log(`Deleted ${result.deletedCount} Persons`)
@@ -53,6 +63,7 @@ const calculateCollectiveAge = async () => {
 
 module.exports = { 
     createPerson, 
+    createPersons,
     deleteAllPersons,
     calculateCollectiveAge
 }

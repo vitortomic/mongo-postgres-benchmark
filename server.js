@@ -1,5 +1,5 @@
 const express = require('express')
-const { createPerson, deleteAllPersons, calculateCollectiveAge } = require('./mongoPersonService.js')
+const { createPerson, createPersons, deleteAllPersons, calculateCollectiveAge } = require('./mongoPersonService.js')
 const Chance = require('chance')
 const { Pool } = require('pg')
 const Knex = require('knex')
@@ -8,17 +8,18 @@ const app = express()
 const PORT = process.env.PORT || 3000
 const chance = new Chance()
 
-const numberOfRecords = 10000
+const numberOfRecords = 1000000
 
-for (let index = 0; index < numberOfRecords; index++) {
-  createPerson({
-    address: chance.address(),
-    phoneNumber: chance.phone(),
-    firstName: chance.first(),
-    lastName: chance.last(),
-    birthDate: chance.birthday()
-  })
-}
+const persons = Array.from({ length: numberOfRecords }, () => ({
+  address: chance.address(),
+  phoneNumber: chance.phone(),
+  firstName: chance.first(),
+  lastName: chance.last(),
+  birthDate: chance.birthday()
+}));
+
+const createdPersonsMongo = createPersons(persons)
+console.log(`Create persons execution time ${createdPersonsMongo.executionTime}ms`)
 
 app.use(express.json())
 app.listen(PORT, () => {
@@ -27,9 +28,11 @@ app.listen(PORT, () => {
 
 app.delete('/persons', async (req, res) => {
   try {
+    console.time('deletePersons')
     deletedCount = await deleteAllPersons();
     res.json({
-      "deletedCount": deletedCount
+      "deletedCount": deletedCount,
+      executionTime: console.timeEnd('deletePersons')
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -38,9 +41,11 @@ app.delete('/persons', async (req, res) => {
 
 app.get('/persons/getCollectiveAge', async (req, res) => {
   try {
+    console.time('getCollectiveAge')
     collectiveAge = await calculateCollectiveAge()
     res.json({
-      "collectiveAge": collectiveAge
+      "collectiveAge": collectiveAge,
+      executionTime: console.timeEnd('getCollectiveAge')
     })
   } catch (error) {
     res.status(500).json({ error: error.message });

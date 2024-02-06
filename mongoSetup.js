@@ -2,7 +2,9 @@ const mongoose = require('mongoose')
 
 mongoose.connect('mongodb://localhost:27017/benchmark_mongodb', {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
+  connectTimeoutMS: 100000,
+  serverSelectionTimeoutMS: 100000
 })
 
 const contactSchema = new mongoose.Schema({
