@@ -18,6 +18,7 @@ const createPerson = async (personDto) => {
 const deleteAllPersons = async () => {
     result = await Person.deleteMany({})
     console.log(`Deleted ${result.deletedCount} Persons`)
+    return result.deletedCount
 }
 
 
