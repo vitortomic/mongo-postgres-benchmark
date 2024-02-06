@@ -1,5 +1,5 @@
 const { Contact, Person } = require('./mongoSetup.js')
-const { performance } = require('perf_hooks');
+const { performance } = require('perf_hooks')
 
 const createPerson = async (personDto) => {
     const newContact = new Contact({
@@ -10,17 +10,17 @@ const createPerson = async (personDto) => {
         firstName: personDto.firstName,
         lastName: personDto.lastName,
         contact: newContact,
-        birthDate: new Date('1990-01-01')
+        birthDate: personDto.birthDate
     })
     const savedPerson = await newPerson.save()
     console.log('Person saved:', savedPerson)
 }
 
 const createPersons = async (persons) => {
-    const startTime = performance.now();
+    const startTime = performance.now()
     createdPersons = await Person.insertMany(persons)
-    const endTime = performance.now();
-    const executionTime = endTime - startTime;
+    const endTime = performance.now()
+    const executionTime = endTime - startTime
     console.log(`Saved ${createdPersons.length} persons`)
     return {
         createdPersons,
@@ -29,9 +29,9 @@ const createPersons = async (persons) => {
 }
 
 const deleteAllPersons = async () => {
-    const startTime = performance.now();
+    const startTime = performance.now()
     result = await Person.deleteMany({})
-    const endTime = performance.now();
+    const endTime = performance.now()
     const executionTime = endTime - startTime;
     console.log(`Deleted ${result.deletedCount} Persons`)
     return {
@@ -41,7 +41,7 @@ const deleteAllPersons = async () => {
 }
 
 const calculateCollectiveAge = async () => {
-    const startTime = performance.now();
+    const startTime = performance.now()
     try {
       const result = await Person.aggregate([
         {
@@ -58,13 +58,13 @@ const calculateCollectiveAge = async () => {
         }
       ]);
       
-      const collectiveAgeInMilliseconds = result[0]?.collectiveAge || 0;
-      const collectiveAgeInSeconds = collectiveAgeInMilliseconds / 1000;
-      const collectiveAgeInYears = collectiveAgeInSeconds / (365.25 * 24 * 60 * 60);
-      const endTime = performance.now();
-      const executionTime = endTime - startTime;
+      const collectiveAgeInMilliseconds = result[0]?.collectiveAge || 0
+      const collectiveAgeInSeconds = collectiveAgeInMilliseconds / 1000
+      const collectiveAgeInYears = collectiveAgeInSeconds / (365.25 * 24 * 60 * 60)
+      const endTime = performance.now()
+      const executionTime = endTime - startTime
    
-      console.log('Collective age of all persons:', collectiveAgeInYears.toFixed(2), 'years');
+      console.log('Collective age of all persons:', collectiveAgeInYears.toFixed(2), 'years')
       return {
         collectiveAgeInYears,
         executionTime: executionTime
