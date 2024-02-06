@@ -1,5 +1,5 @@
 const express = require('express')
-const { createPerson, deleteAllPersons } = require('./mongoPersonService.js')
+const { createPerson, deleteAllPersons, calculateCollectiveAge } = require('./mongoPersonService.js')
 const Chance = require('chance')
 const { Pool } = require('pg')
 const Knex = require('knex')
@@ -31,6 +31,17 @@ app.delete('/persons', async (req, res) => {
     res.json({
       "deletedCount": deletedCount
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/persons/getCollectiveAge', async (req, res) => {
+  try {
+    collectiveAge = await calculateCollectiveAge()
+    res.json({
+      "collectiveAge": collectiveAge
+    })
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
