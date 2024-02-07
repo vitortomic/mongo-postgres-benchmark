@@ -1,5 +1,5 @@
-const neo4j = require('neo4j-driver');
-const { performance } = require('perf_hooks');
+const neo4j = require('neo4j-driver')
+const { performance } = require('perf_hooks')
 
 const driver = neo4j.driver(
   'bolt://localhost:7687', 
