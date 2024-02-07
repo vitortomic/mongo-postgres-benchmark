@@ -1,6 +1,6 @@
 const express = require('express')
 const { createPerson, createPersons, deleteAllPersons, calculateCollectiveAge } = require('./mongoPersonService.js')
-const { createTablesPg, createPersonPg, createPersonsPg, deleteAllPersonsPg, calculateCollectiveAgePg } = require('./postgresPersonService.js')
+const { createTablesPg, createPersonsPgV2, createPersonPg, createPersonsPg, deleteAllPersonsPg, calculateCollectiveAgePg } = require('./postgresPersonService.js')
 const { createPersonNeo4j, createPersonsNeo4j, deleteAllNodes, calculateCollectiveAgeNeo4j } = require('./neo4jPersonService.js')
 const Chance = require('chance')
 const { randomUUID } = require('crypto');
@@ -65,6 +65,7 @@ app.delete('/deleteAll', async (req, res) => {
   }
 });
 
+
 app.get('/benchmark/:numberOfRecords', async (req, res) => {
   try {
     const numberOfRecords = parseInt(req.params.numberOfRecords)
@@ -113,3 +114,103 @@ app.get('/benchmark/:numberOfRecords', async (req, res) => {
   }
 });
 
+app.get('/benchmark/pg/:numberOfRecords', async (req, res) => {
+  try {
+    const numberOfRecords = parseInt(req.params.numberOfRecords)
+
+    if (isNaN(numberOfRecords) || numberOfRecords <= 0) {
+      return res.status(400).json({ error: 'Invalid number!' });
+    }
+
+    const persons = Array.from({ length: numberOfRecords }, () => ({
+      id: randomUUID(),
+      address: chance.address(),
+      phoneNumber: chance.phone(),
+      firstName: chance.first(),
+      lastName: chance.last(),
+      birthDate: chance.birthday()
+    }));
+
+    createdPersonsPg = await createPersonsPgV2(persons)
+    collectiveAgePg = await calculateCollectiveAgePg()
+    deleteResponsePg = await deleteAllPersonsPg()
+
+  
+    response = {
+      numberOfRecords,
+      'createPersonsExecutionTimePg': createdPersonsPg.executionTime,
+      'getCollectiveAgeExecutionTimePg': collectiveAgePg.executionTime,
+      'deleteAllExecutionTimePg': deleteResponsePg.executionTime,
+    }
+    res.json(response)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+});
+
+app.get('/benchmark/mongo/:numberOfRecords', async (req, res) => {
+  try {
+    const numberOfRecords = parseInt(req.params.numberOfRecords)
+
+    if (isNaN(numberOfRecords) || numberOfRecords <= 0) {
+      return res.status(400).json({ error: 'Invalid number!' });
+    }
+
+    const persons = Array.from({ length: numberOfRecords }, () => ({
+      id: randomUUID(),
+      address: chance.address(),
+      phoneNumber: chance.phone(),
+      firstName: chance.first(),
+      lastName: chance.last(),
+      birthDate: chance.birthday()
+    }));
+
+    createdPersonsMongo = await createPersons(persons)
+    collectiveAgeMongo = await calculateCollectiveAge()
+    deleteResponseMongo = await deleteAllPersons()
+
+  
+    response = {
+      numberOfRecords,
+      'createPersonsExecutionTimeMongo': createdPersonsMongo.executionTime,
+      'getCollectiveAgeExecutionTimeMongo': collectiveAgeMongo.executionTime,
+      'deleteAllExecutionTimeMongo': deleteResponseMongo.executionTime,
+    }
+    res.json(response)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+});
+
+app.get('/benchmark/neo4j/:numberOfRecords', async (req, res) => {
+  try {
+    const numberOfRecords = parseInt(req.params.numberOfRecords)
+
+    if (isNaN(numberOfRecords) || numberOfRecords <= 0) {
+      return res.status(400).json({ error: 'Invalid number!' });
+    }
+
+    const persons = Array.from({ length: numberOfRecords }, () => ({
+      id: randomUUID(),
+      address: chance.address(),
+      phoneNumber: chance.phone(),
+      firstName: chance.first(),
+      lastName: chance.last(),
+      birthDate: chance.birthday()
+    }));
+
+    createdPersonsNeo4j = await createPersonsNeo4j(persons)
+    collectiveAgeNeo4j = await calculateCollectiveAgeNeo4j()
+    deleteResponseNeo4j = await deleteAllNodes()
+
+    response = {
+      numberOfRecords,
+      'createPersonsExecutionTimeNeo4j': createdPersonsNeo4j.executionTime,
+      'getCollectiveAgeExecutionTimeNeo4j': collectiveAgeNeo4j.executionTime,
+      'deleteAllExecutionTimeNeo4j': deleteResponseNeo4j.executionTime
+    }
+    res.json(response)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+});

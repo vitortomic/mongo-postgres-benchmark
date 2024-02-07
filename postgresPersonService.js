@@ -80,6 +80,45 @@ const createPersonsPg = async (persons) => {
 
   try {
     await client.query('BEGIN')
+    createdPersons = []
+    for (const personDto of persons) {
+      const personResult = await client.query(
+        'INSERT INTO person(first_name, last_name, birth_date) VALUES($1, $2, $3) RETURNING *',
+        [personDto.firstName, personDto.lastName, personDto.birthDate]
+      )
+      const contactResult = await client.query(
+        'INSERT INTO contact(person_id, address, phone_number) VALUES($1, $2, $3) RETURNING *',
+        [personResult.rows[0].id, personDto.address, personDto.phoneNumber]
+      )
+      createdPersons.push({personResult, contactResult})
+    }
+    
+    await client.query('COMMIT')
+
+    const endTime = performance.now()
+    const executionTime = endTime - startTime
+
+    console.log(`Saved ${createdPersons.length} persons`)
+    return {
+      createdPersons: createdPersons,
+      executionTime: executionTime,
+    }
+  } catch (error) {
+    await client.query('ROLLBACK')
+    console.error('Error creating persons:', error.message)
+    throw error
+  } finally {
+    client.release()
+  }
+}
+
+const createPersonsPgV2 = async (persons) => {
+  const startTime = performance.now()
+
+  const client = await pool.connect()
+
+  try {
+    await client.query('BEGIN')
 
     const createdPersonsResult = await Promise.all(
       persons.map(async (personDto) => {
@@ -173,4 +212,5 @@ module.exports = {
   createPersonsPg,
   deleteAllPersonsPg,
   calculateCollectiveAgePg,
+  createPersonsPgV2
 }
