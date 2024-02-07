@@ -4,9 +4,9 @@ const { performance } = require('perf_hooks')
 const driver = neo4j.driver(
   'bolt://localhost:7687', 
   neo4j.auth.basic('neo4j', '12345678')
-);
+)
 
-const session = driver.session();
+const session = driver.session()
 
 
 const createPersonNeo4j = async (personDto) => {
@@ -22,7 +22,7 @@ const createPersonNeo4j = async (personDto) => {
       birthDate: personDto.birthDate.toISOString(),
     }
   
-    const createPersonResult = await tx.run(createPersonQuery, person);
+    const createPersonResult = await tx.run(createPersonQuery, person)
 
     const createContactQuery = `
     CREATE (c:Contact {address: $address, phoneNumber: $phoneNumber})
@@ -34,7 +34,7 @@ const createPersonNeo4j = async (personDto) => {
       phoneNumber: personDto.phoneNumber
     }
 
-    const createContactResult = await tx.run(createContactQuery, contact);
+    const createContactResult = await tx.run(createContactQuery, contact)
 
     await tx.run(
       `
@@ -47,7 +47,7 @@ const createPersonNeo4j = async (personDto) => {
       }
     );
   
-    return createPersonResult.records[0].get('p').properties;
+    return createPersonResult.records[0].get('p').properties
   });
 }
 
@@ -58,21 +58,21 @@ const createPersonsNeo4j = async (persons) => {
     const query = `CREATE (p:Person { firstName: $firstName, lastName: $lastName, birthDate: $birthDate})-[:HAS_CONTACT]->(c:Contact {address: $address, phoneNumber: $phoneNumber})`
 
     const parameters = {}
-    parameters['firstName'] = personDto.firstName;
-    parameters['lastName'] = personDto.lastName;
-    parameters['birthDate'] = personDto.birthDate.toISOString();
-    parameters['address'] = personDto.address;
-    parameters['phoneNumber'] = personDto.phoneNumber;
+    parameters['firstName'] = personDto.firstName
+    parameters['lastName'] = personDto.lastName
+    parameters['birthDate'] = personDto.birthDate.toISOString()
+    parameters['address'] = personDto.address
+    parameters['phoneNumber'] = personDto.phoneNumber
       
     const result = await session.writeTransaction(async (tx) => {
       await tx.run(query, parameters);
     });
   }
   
-  const endTime = performance.now();
+  const endTime = performance.now()
   const executionTime = endTime - startTime;
 
-  console.log(`Saved ${persons.length} persons`);
+  console.log(`Saved ${persons.length} persons`)
   return {
     createdPersons: persons,
     executionTime: executionTime,
@@ -86,18 +86,18 @@ const deleteAllNodes = async () => {
 
   try {
     await session.writeTransaction(async (tx) => {
-      await tx.run('MATCH (n) DETACH DELETE n');
+      await tx.run('MATCH (n) DETACH DELETE n')
     });
 
     const endTime = performance.now();
-    const executionTime = endTime - startTime;
+    const executionTime = endTime - startTime
 
-    console.log(`Deleted all nodes`);
+    console.log(`Deleted all nodes`)
     return {
       executionTime: executionTime,
     };
   } finally {
-    await session.close();
+    await session.close()
   }
 };
 
@@ -113,24 +113,50 @@ const calculateCollectiveAgeNeo4j = async () => {
       RETURN REDUCE(s = 0, age IN COLLECT(ageInSeconds) | s + age) AS collectiveAgeInSeconds;
       `);
 
-      const collectiveAgeInSeconds = Number(collectiveAgeResult.records[0].get('collectiveAgeInSeconds'));
-      const collectiveAgeInYears = collectiveAgeInSeconds / (365.25 * 24 * 60 * 60);
+      const collectiveAgeInSeconds = Number(collectiveAgeResult.records[0].get('collectiveAgeInSeconds'))
+      const collectiveAgeInYears = collectiveAgeInSeconds / (365.25 * 24 * 60 * 60)
 
       return {
         collectiveAgeInYears,
       };
     });
 
-    const endTime = performance.now();
-    const executionTime = endTime - startTime;
+    const endTime = performance.now()
+    const executionTime = endTime - startTime
 
-    console.log('Collective age of all persons:', result.collectiveAgeInYears.toFixed(2), 'years');
+    console.log('Collective age of all persons:', result.collectiveAgeInYears.toFixed(2), 'years')
     return {
       collectiveAgeInYears: result.collectiveAgeInYears,
       executionTime: executionTime,
     };
   } finally {
-    await session.close();
+    await session.close()
+  }
+};
+
+const findPersonsByFirstNameNeo4j = async (firstName) => {
+  const startTime = performance.now();
+  const session = driver.session();
+  try {
+    const result = await session.readTransaction(async (tx) => {
+      const query = `MATCH (p:Person {firstName: $firstName}) 
+                    OPTIONAL MATCH (p)-[:HAS_CONTACT]->(c:Contact) 
+                    RETURN p.id AS personId, p.firstName AS firstName, p.lastName AS lastName, p.birthDate AS birthDate, c.address AS address, c.phoneNumber AS phoneNumber`
+      const parameters = { firstName: firstName };
+      const personsResult = await tx.run(query, parameters);
+      return {
+        "persons": personsResult,
+      };
+    });
+
+    const endTime = performance.now()
+    const executionTime = endTime - startTime
+    return {
+      collectiveAgeInYears: result.persons,
+      executionTime: executionTime,
+    };
+  } finally {
+    await session.close()
   }
 };
 
@@ -138,5 +164,6 @@ module.exports = {
   createPersonNeo4j,
   createPersonsNeo4j,
   deleteAllNodes,
-  calculateCollectiveAgeNeo4j
+  calculateCollectiveAgeNeo4j,
+  findPersonsByFirstNameNeo4j
 }

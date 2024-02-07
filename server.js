@@ -1,7 +1,7 @@
 const express = require('express')
 const { findPersonsByFirstName, createPerson, createPersons, deleteAllPersons, calculateCollectiveAge } = require('./mongoPersonService.js')
 const { findPersonsByFirstNamePg, createTablesPg, createPersonsPgV2, createPersonPg, createPersonsPg, deleteAllPersonsPg, calculateCollectiveAgePg } = require('./postgresPersonService.js')
-const { createPersonNeo4j, createPersonsNeo4j, deleteAllNodes, calculateCollectiveAgeNeo4j } = require('./neo4jPersonService.js')
+const { findPersonsByFirstNameNeo4j, createPersonNeo4j, createPersonsNeo4j, deleteAllNodes, calculateCollectiveAgeNeo4j } = require('./neo4jPersonService.js')
 const Chance = require('chance')
 const { randomUUID } = require('crypto');
 
@@ -133,15 +133,15 @@ app.get('/benchmark/pg/:numberOfRecords', async (req, res) => {
 
     createdPersonsPg = await createPersonsPgV2(persons)
     collectiveAgePg = await calculateCollectiveAgePg()
-    deleteResponsePg = await deleteAllPersonsPg()
     findPersons = await findPersonsByFirstNamePg("John")
+    deleteResponsePg = await deleteAllPersonsPg()
   
     response = {
       numberOfRecords,
       'createPersonsExecutionTimePg': createdPersonsPg.executionTime,
       'getCollectiveAgeExecutionTimePg': collectiveAgePg.executionTime,
       'deleteAllExecutionTimePg': deleteResponsePg.executionTime,
-      'findJohnsExecutionTime': findPersons.executionTime
+      'findPersonsExecutionTime': findPersons.executionTime
     }
     res.json(response)
   } catch (error) {
@@ -168,15 +168,15 @@ app.get('/benchmark/mongo/:numberOfRecords', async (req, res) => {
 
     createdPersonsMongo = await createPersons(persons)
     collectiveAgeMongo = await calculateCollectiveAge()
-    deleteResponseMongo = await deleteAllPersons()
     findPersons = await findPersonsByFirstName("John")
+    deleteResponseMongo = await deleteAllPersons()
   
     response = {
       numberOfRecords,
       'createPersonsExecutionTimeMongo': createdPersonsMongo.executionTime,
       'getCollectiveAgeExecutionTimeMongo': collectiveAgeMongo.executionTime,
       'deleteAllExecutionTimeMongo': deleteResponseMongo.executionTime,
-      'findJohnsExecutionTime': findPersons.executionTime
+      'findPersonsExecutionTime': findPersons.executionTime
     }
     res.json(response)
   } catch (error) {
@@ -203,12 +203,14 @@ app.get('/benchmark/neo4j/:numberOfRecords', async (req, res) => {
 
     createdPersonsNeo4j = await createPersonsNeo4j(persons)
     collectiveAgeNeo4j = await calculateCollectiveAgeNeo4j()
+    findPersons = await findPersonsByFirstNameNeo4j("John")
     deleteResponseNeo4j = await deleteAllNodes()
 
     response = {
       numberOfRecords,
       'createPersonsExecutionTimeNeo4j': createdPersonsNeo4j.executionTime,
       'getCollectiveAgeExecutionTimeNeo4j': collectiveAgeNeo4j.executionTime,
+      'findPersonsExecutionTime': findPersons.executionTime,
       'deleteAllExecutionTimeNeo4j': deleteResponseNeo4j.executionTime
     }
     res.json(response)

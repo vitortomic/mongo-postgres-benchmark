@@ -225,7 +225,7 @@ const findPersonsByFirstNamePg = async (firstName) => {
     const result = await client.query(query, [firstName]);
     const endTime = performance.now()
     const executionTime = endTime - startTime
-    
+
     return {
       "persons": result.rows,
       executionTime: executionTime,
