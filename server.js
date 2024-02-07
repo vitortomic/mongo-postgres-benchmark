@@ -9,35 +9,10 @@ const app = express()
 const PORT = process.env.PORT || 3000
 const chance = new Chance()
 
-
 app.use(express.json())
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`)
 })
-
-app.delete('/persons', async (req, res) => {
-  try {
-    deletedCount = await deleteAllPersons()
-    res.json({
-      "deletedCount": deletedCount.deletedCount,
-      executionTime: deletedCount.executionTime
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-});
-
-app.delete('/personsPg', async (req, res) => {
-  try {
-    deletedCount = await deleteAllPersonsPg();
-    res.json({
-      "deletedCount": deletedCount.deletedCount,
-      executionTime: deletedCount.executionTime
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-});
 
 app.get('/persons/getCollectiveAge', async (req, res) => {
   try {
@@ -54,6 +29,18 @@ app.get('/persons/getCollectiveAge', async (req, res) => {
 app.get('/persons/getCollectiveAgePg', async (req, res) => {
   try {
     collectiveAge = await calculateCollectiveAgePg()
+    res.json({
+      "collectiveAge": collectiveAge,
+      executionTime: collectiveAge.executionTime
+    })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+});
+
+app.get('/persons/getCollectiveAgeNeo4j', async (req, res) => {
+  try {
+    collectiveAge = await calculateCollectiveAgeNeo4j()
     res.json({
       "collectiveAge": collectiveAge,
       executionTime: collectiveAge.executionTime
