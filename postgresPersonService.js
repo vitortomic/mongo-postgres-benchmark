@@ -206,11 +206,38 @@ const calculateCollectiveAgePg = async () => {
   }
 }
 
+const findPersonsByFirstNamePg = async (firstName) => {
+  const startTime = performance.now()
+  const client = await pool.connect()
+  const query = `
+      SELECT 
+        person.id,
+        person.first_name,
+        person.last_name,
+        person.birth_date,
+        contact.address,
+        contact.phone_number
+      FROM person
+      LEFT JOIN contact ON person.id = contact.person_id
+      WHERE person.first_name = $1
+    `;
+
+    const result = await client.query(query, [firstName]);
+    const endTime = performance.now()
+    const executionTime = endTime - startTime
+    
+    return {
+      "persons": result.rows,
+      executionTime: executionTime,
+    }
+}
+
 module.exports = {
   createTablesPg,
   createPersonPg,
   createPersonsPg,
   deleteAllPersonsPg,
   calculateCollectiveAgePg,
-  createPersonsPgV2
+  createPersonsPgV2,
+  findPersonsByFirstNamePg
 }

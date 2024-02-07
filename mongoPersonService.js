@@ -28,6 +28,17 @@ const createPersons = async (persons) => {
       };
 }
 
+const findPersonsByFirstName = async (firstName) => {
+  const startTime = performance.now()
+  const persons = await Person.find({ firstName: firstName });
+  const endTime = performance.now()
+  const executionTime = endTime - startTime;
+  return {
+    persons,
+    executionTime: executionTime
+  };
+}
+
 const deleteAllPersons = async () => {
     const startTime = performance.now()
     result = await Person.deleteMany({})
@@ -80,5 +91,6 @@ module.exports = {
     createPerson, 
     createPersons,
     deleteAllPersons,
-    calculateCollectiveAge
+    calculateCollectiveAge,
+    findPersonsByFirstName
 }

@@ -1,6 +1,6 @@
 const express = require('express')
-const { createPerson, createPersons, deleteAllPersons, calculateCollectiveAge } = require('./mongoPersonService.js')
-const { createTablesPg, createPersonsPgV2, createPersonPg, createPersonsPg, deleteAllPersonsPg, calculateCollectiveAgePg } = require('./postgresPersonService.js')
+const { findPersonsByFirstName, createPerson, createPersons, deleteAllPersons, calculateCollectiveAge } = require('./mongoPersonService.js')
+const { findPersonsByFirstNamePg, createTablesPg, createPersonsPgV2, createPersonPg, createPersonsPg, deleteAllPersonsPg, calculateCollectiveAgePg } = require('./postgresPersonService.js')
 const { createPersonNeo4j, createPersonsNeo4j, deleteAllNodes, calculateCollectiveAgeNeo4j } = require('./neo4jPersonService.js')
 const Chance = require('chance')
 const { randomUUID } = require('crypto');
@@ -134,13 +134,14 @@ app.get('/benchmark/pg/:numberOfRecords', async (req, res) => {
     createdPersonsPg = await createPersonsPgV2(persons)
     collectiveAgePg = await calculateCollectiveAgePg()
     deleteResponsePg = await deleteAllPersonsPg()
-
+    findPersons = await findPersonsByFirstNamePg("John")
   
     response = {
       numberOfRecords,
       'createPersonsExecutionTimePg': createdPersonsPg.executionTime,
       'getCollectiveAgeExecutionTimePg': collectiveAgePg.executionTime,
       'deleteAllExecutionTimePg': deleteResponsePg.executionTime,
+      'findJohnsExecutionTime': findPersons.executionTime
     }
     res.json(response)
   } catch (error) {
@@ -168,13 +169,14 @@ app.get('/benchmark/mongo/:numberOfRecords', async (req, res) => {
     createdPersonsMongo = await createPersons(persons)
     collectiveAgeMongo = await calculateCollectiveAge()
     deleteResponseMongo = await deleteAllPersons()
-
+    findPersons = await findPersonsByFirstName("John")
   
     response = {
       numberOfRecords,
       'createPersonsExecutionTimeMongo': createdPersonsMongo.executionTime,
       'getCollectiveAgeExecutionTimeMongo': collectiveAgeMongo.executionTime,
       'deleteAllExecutionTimeMongo': deleteResponseMongo.executionTime,
+      'findJohnsExecutionTime': findPersons.executionTime
     }
     res.json(response)
   } catch (error) {
