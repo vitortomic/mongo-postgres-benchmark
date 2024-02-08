@@ -134,13 +134,13 @@ app.get('/benchmark/pg/:numberOfRecords', async (req, res) => {
     createdPersonsPg = await createPersonsPgV2(persons)
     collectiveAgePg = await calculateCollectiveAgePg()
     findPersons = await findPersonsByFirstNamePg("John")
-    deleteResponsePg = await deleteAllPersonsPg()
+    //deleteResponsePg = await deleteAllPersonsPg()
   
     response = {
       numberOfRecords,
       'createPersonsExecutionTimePg': createdPersonsPg.executionTime,
       'getCollectiveAgeExecutionTimePg': collectiveAgePg.executionTime,
-      'deleteAllExecutionTimePg': deleteResponsePg.executionTime,
+      //'deleteAllExecutionTimePg': deleteResponsePg.executionTime,
       'findPersonsExecutionTime': findPersons.executionTime
     }
     res.json(response)
@@ -169,13 +169,13 @@ app.get('/benchmark/mongo/:numberOfRecords', async (req, res) => {
     createdPersonsMongo = await createPersons(persons)
     collectiveAgeMongo = await calculateCollectiveAge()
     findPersons = await findPersonsByFirstName("John")
-    deleteResponseMongo = await deleteAllPersons()
+    //deleteResponseMongo = await deleteAllPersons()
   
     response = {
       numberOfRecords,
       'createPersonsExecutionTimeMongo': createdPersonsMongo.executionTime,
       'getCollectiveAgeExecutionTimeMongo': collectiveAgeMongo.executionTime,
-      'deleteAllExecutionTimeMongo': deleteResponseMongo.executionTime,
+      //'deleteAllExecutionTimeMongo': deleteResponseMongo.executionTime,
       'findPersonsExecutionTime': findPersons.executionTime
     }
     res.json(response)
@@ -204,14 +204,14 @@ app.get('/benchmark/neo4j/:numberOfRecords', async (req, res) => {
     createdPersonsNeo4j = await createPersonsNeo4j(persons)
     collectiveAgeNeo4j = await calculateCollectiveAgeNeo4j()
     findPersons = await findPersonsByFirstNameNeo4j("John")
-    deleteResponseNeo4j = await deleteAllNodes()
+    //deleteResponseNeo4j = await deleteAllNodes()
 
     response = {
       numberOfRecords,
       'createPersonsExecutionTimeNeo4j': createdPersonsNeo4j.executionTime,
       'getCollectiveAgeExecutionTimeNeo4j': collectiveAgeNeo4j.executionTime,
       'findPersonsExecutionTime': findPersons.executionTime,
-      'deleteAllExecutionTimeNeo4j': deleteResponseNeo4j.executionTime
+      //'deleteAllExecutionTimeNeo4j': deleteResponseNeo4j.executionTime
     }
     res.json(response)
   } catch (error) {
